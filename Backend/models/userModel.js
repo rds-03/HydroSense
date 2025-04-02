@@ -1,19 +1,16 @@
-import mongoose, { Mongoose } from "mongoose";
+import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: {
-    type: String,
-    unique: true,
+const userSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    age: { type: Number, required: true },
+    gender: { type: String, enum: ["Male", "Female", "Other"], required: true },
+    weight: { type: Number, required: true },
   },
-  password: {
-    type: String,
-    unique: true,
-  },
-  waterIntake: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "waterIntake",
-  },
-});
+  { timestamps: true }
+);
 
-export default mongoose.Model("User", userSchema);
+const User = mongoose.model("User", userSchema);
+export default User;

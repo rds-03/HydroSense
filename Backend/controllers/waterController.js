@@ -1,9 +1,9 @@
-const WaterIntake = require("../models/WaterIntake");
+import waterIntake from "../models/waterIntake";
 
 const logWaterIntake = async (req, res) => {
   try {
     const { amount } = req.body;
-    const waterEntry = new WaterIntake({ user: req.user.id, amount });
+    const waterEntry = new waterIntake({ user: req.user.id, amount });
     await waterEntry.save();
     res.json({ message: "Water intake logged", data: waterEntry });
   } catch (error) {
