@@ -1,7 +1,7 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-
+import getWeather from "../Services/weatherService.js";
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password, age, gender, weight } = req.body;
@@ -36,7 +36,7 @@ export const loginUser = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
     if (user && (await bcrypt.compare(password, user.password))) {
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
-        expiresIn: "1d",
+        expiresIn: "20m",
       });
       if (!token)
         return res.status(400).json({ message: "Error in token generation" });
@@ -49,9 +49,19 @@ export const loginUser = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-password");
-    if (user) res.json({ message: `Hello ${user.name}!` });
-    else res.status(404).json({ message: "User not found" });
+    const { latitude, longitude } = req.body;
+    if (!latitude || !longitude) {
+      return res
+        .status(400)
+        .json({ message: "Latitude and Longitude are required" });
+    }
+    const user = req.user.name;
+    const weather = await getWeather(latitude, longitude);
+    if (!weather)
+      return res
+        .status(404)
+        .json({ message: "Weather not found some error with the api" });
+    res.json({ ...weather, user });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }

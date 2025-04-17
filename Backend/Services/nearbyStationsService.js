@@ -1,20 +1,14 @@
 import axios from "axios";
 
-const findWaterStations = async (req, res) => {
+const findWaterStations = async (lat, long) => {
   try {
-    const { lat, lon } = req.query;
-    if (!lat || !lon) {
-      return res.status(400).json({
-        error: "You must provide latitude and longitude as arguments",
-      });
-    }
     const response = await axios.get(
       `https://maps.googleapis.com/maps/api/place/nearbysearch/json`,
       {
         params: {
-          location: `${lat},${lon}`,
-          radius: 5000,
-          type: "rest rooms",
+          location: `${lat},${long}`,
+          radius: 1000,
+          type: "restaurant",
           key: process.env.MAPS_KEY,
         },
       }
@@ -27,12 +21,15 @@ const findWaterStations = async (req, res) => {
         name: place.name,
         address: place.vicinity,
         rating: place.rating,
+        open_now: place.opening_hours?.open_now ?? null,
+        types: place.types,
+        url: `https://www.google.com/maps/place/?q=place_id:${place.place_id}`,
       };
     });
     const sortedResults = restraurents.sort((a, b) => {
       return b.rating - a.rating;
     });
-    res.status(200).json(sortedResults);
+    return sortedResults;
   } catch (error) {
     throw new Error("Error in API KEY");
   }
